@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Nexia Tech — Agency Admin</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100%;background:#08080f;font-family:'DM Sans',sans-serif;color:#e8e0d0;}
+:root{--gold:#d4a853;--gold2:#b8860b;--dark:#08080f;--card:#12121e;--border:#d4a85320;--muted:#6b6b7e;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;}
+
+/* LOGIN */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1rem;background:radial-gradient(ellipse at 30% 20%,#d4a85312,transparent 60%),#08080f;}
+.login-card{width:100%;max-width:400px;background:linear-gradient(135deg,#13131f,#0f0f1a);border:1px solid var(--border);border-radius:20px;padding:2.5rem;}
+.logo{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:#fff;text-align:center;}
+.logo span{color:var(--gold);}
+.sub{text-align:center;font-size:0.78rem;color:var(--muted);margin-bottom:2rem;margin-top:0.25rem;}
+.lbl{display:block;font-size:0.63rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.35rem;margin-top:1rem;}
+.inp{width:100%;padding:0.78rem 1rem;background:#0a0a14;border:1px solid #d4a85325;border-radius:10px;color:#e8e0d0;font-size:0.86rem;font-family:'DM Sans',sans-serif;}
+.inp:focus{outline:none;border-color:#d4a85560;}
+.gold-btn{width:100%;margin-top:1.5rem;padding:0.9rem;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;color:#0a0a0f;font-weight:700;font-size:0.95rem;cursor:pointer;font-family:'Syne',sans-serif;letter-spacing:0.05em;}
+.gold-btn:active{opacity:0.85;}
+.hint{text-align:center;margin-top:0.75rem;font-size:0.7rem;color:var(--muted);}
+
+/* APP */
+#app{display:none;min-height:100vh;}
+
+/* TOP NAV (mobile friendly) */
+.topnav{background:#0f0f1a;border-bottom:1px solid var(--border);padding:0.75rem 1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;position:sticky;top:0;z-index:50;}
+.nav-logo{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:#fff;}
+.nav-logo span{color:var(--gold);}
+.nav-links{display:flex;gap:0.25rem;flex-wrap:wrap;}
+.nav-item{padding:0.45rem 0.85rem;border-radius:8px;font-size:0.8rem;cursor:pointer;color:var(--muted);transition:all 0.2s;border:none;background:transparent;font-family:'DM Sans',sans-serif;}
+.nav-item:hover{color:#e8e0d0;background:#d4a85310;}
+.nav-item.active{color:var(--gold);background:linear-gradient(135deg,#d4a85318,#b8860b0a);border:1px solid #d4a85325;}
+.nav-right{display:flex;align-items:center;gap:0.5rem;}
+.nav-logout{padding:0.4rem 0.85rem;border-radius:8px;background:transparent;border:1px solid #d4a85318;color:var(--muted);font-size:0.75rem;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+/* PAGES */
+.page{display:none;padding:1.5rem;max-width:1100px;margin:0 auto;}
+.page.active{display:block;}
+.page-title{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#fff;margin-bottom:0.25rem;}
+.page-sub{font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem;}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin-bottom:1.5rem;}
+.stat-card{background:linear-gradient(135deg,var(--card),#0f0f18);border:1px solid var(--border);border-radius:14px;padding:1.1rem;}
+.stat-icon{font-size:1.3rem;margin-bottom:0.4rem;}
+.stat-val{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800;color:#fff;line-height:1;}
+.stat-lbl{font-size:0.7rem;color:var(--muted);margin-top:0.2rem;}
+
+/* CARDS */
+.section-card{background:linear-gradient(135deg,var(--card),#0f0f18);border:1px solid var(--border);border-radius:14px;padding:1.25rem;margin-bottom:1.25rem;}
+.sec-title{font-family:'Syne',sans-serif;font-size:0.88rem;font-weight:700;color:#fff;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;}
+
+/* BUTTONS */
+.btn{padding:0.52rem 1rem;border-radius:8px;font-size:0.78rem;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0a0a0f;}
+.btn-gold:active{opacity:0.85;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted);}
+.btn-outline:hover{border-color:#d4a85340;color:#e8e0d0;}
+.btn-danger{background:#ef444415;border:1px solid #ef444430;color:var(--red);}
+.btn-sm{padding:0.32rem 0.7rem;font-size:0.7rem;}
+
+/* CLIENT GRID */
+.clients-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;}
+.client-card{background:linear-gradient(135deg,#13131f,#0f0f18);border:1px solid var(--border);border-radius:14px;padding:1.1rem;position:relative;overflow:hidden;transition:all 0.2s;}
+.client-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--c,#d4a853),transparent);}
+.client-card:hover{transform:translateY(-2px);box-shadow:0 12px 32px #00000040;}
+.client-header{display:flex;align-items:center;gap:0.7rem;margin-bottom:0.9rem;}
+.client-avatar{width:40px;height:40px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:800;color:#0a0a0f;}
+.client-name{font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:700;color:#fff;}
+.client-email{font-size:0.7rem;color:var(--muted);}
+.client-stats{display:flex;gap:0.6rem;margin-bottom:0.9rem;}
+.cs{flex:1;text-align:center;padding:0.45rem;background:#0a0a1490;border-radius:8px;border:1px solid #d4a85315;}
+.cs-num{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#fff;}
+.cs-lbl{font-size:0.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;}
+
+/* SAFE LINK BOX */
+.safe-link{display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.7rem;background:#0a0a1490;border:1px solid #22c55e25;border-radius:8px;font-size:0.68rem;color:#22c55e;margin-bottom:0.9rem;}
+.safe-link span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.copy-btn{flex-shrink:0;background:transparent;border:none;color:var(--gold);cursor:pointer;font-size:0.72rem;padding:0.1rem 0.3rem;}
+
+.client-actions{display:flex;gap:0.4rem;flex-wrap:wrap;}
+
+/* LEADS TABLE */
+.leads-wrap{overflow-x:auto;}
+.leads-table{width:100%;border-collapse:collapse;}
+.leads-table th{font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);padding:0.55rem 0.7rem;text-align:left;border-bottom:1px solid var(--border);}
+.leads-table td{padding:0.7rem;border-bottom:1px solid #d4a8530a;font-size:0.8rem;vertical-align:middle;}
+.leads-table tr:hover td{background:#d4a8530a;}
+.score-badge{display:inline-flex;align-items:center;gap:0.25rem;padding:0.18rem 0.55rem;border-radius:20px;font-size:0.68rem;font-weight:600;}
+.hot{background:#22c55e15;color:var(--green);border:1px solid #22c55e25;}
+.warm{background:#f59e0b15;color:var(--amber);border:1px solid #f59e0b25;}
+.cold{background:#3b82f615;color:#60a5fa;border:1px solid #3b82f625;}
+.empty-state{text-align:center;padding:2.5rem;color:var(--muted);}
+.empty-icon{font-size:2rem;margin-bottom:0.5rem;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:#00000092;z-index:100;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(4px);}
+.modal-overlay.open{display:flex;}
+.modal{background:linear-gradient(135deg,#14141f,#0f0f1a);border:1px solid #d4a85330;border-radius:18px;padding:1.75rem;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;animation:fadeUp 0.3s ease;}
+.modal-title{font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:800;color:#fff;margin-bottom:0.25rem;}
+.modal-sub{font-size:0.74rem;color:var(--muted);margin-bottom:1.25rem;}
+.modal-footer{display:flex;gap:0.6rem;margin-top:1.25rem;justify-content:flex-end;}
+.color-row{display:flex;gap:0.45rem;flex-wrap:wrap;margin-top:0.35rem;}
+.swatch{width:26px;height:26px;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:all 0.2s;flex-shrink:0;}
+.swatch.sel{border-color:#fff;transform:scale(1.15);}
+
+/* SECURITY NOTE */
+.security-note{background:#22c55e0a;border:1px solid #22c55e25;border-radius:8px;padding:0.75rem 1rem;font-size:0.75rem;color:#22c55e;margin-bottom:1rem;display:flex;align-items:flex-start;gap:0.5rem;line-height:1.5;}
+
+#toast{position:fixed;bottom:1.5rem;right:1.5rem;padding:0.7rem 1.1rem;border-radius:10px;background:#1a2a1a;border:1px solid #22c55e40;color:var(--green);font-size:0.8rem;z-index:9999;display:none;animation:fadeUp 0.3s ease;box-shadow:0 8px 24px #00000050;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:#d4a85330;border-radius:2px;}
+
+@media(max-width:600px){
+  .page{padding:1rem;}
+  .clients-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="logo">Nexia<span>.</span>Tech</div>
+    <div class="sub">Agency Admin Panel</div>
+    <label class="lbl">Username</label>
+    <input class="inp" id="lu" placeholder="admin" type="text"/>
+    <label class="lbl">Password</label>
+    <input class="inp" id="lp" placeholder="••••••••" type="password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="gold-btn" onclick="doLogin()">Login to Dashboard →</button>
+    <div class="hint">Default: admin / nexia2024</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topnav">
+    <div class="nav-logo">Nexia<span>.</span>Tech</div>
+    <div class="nav-links">
+      <button class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard">📊 Dashboard</button>
+      <button class="nav-item" onclick="showPage('clients')" id="nav-clients">🏢 Clients</button>
+      <button class="nav-item" onclick="showPage('leads')" id="nav-leads">🎯 Leads</button>
+      <button class="nav-item" onclick="showPage('settings')" id="nav-settings">⚙️ Settings</button>
+    </div>
+    <div class="nav-right">
+      <button class="nav-logout" onclick="doLogout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div style="margin-bottom:1.5rem;">
+      <div class="page-title">Dashboard 📊</div>
+      <div class="page-sub">Overview of all clients and leads.</div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-icon">🏢</div><div class="stat-val" id="s-clients">0</div><div class="stat-lbl">Clients</div></div>
+      <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-val" id="s-leads">0</div><div class="stat-lbl">Total Leads</div></div>
+      <div class="stat-card"><div class="stat-icon">🔥</div><div class="stat-val" id="s-hot">0</div><div class="stat-lbl">Hot Leads</div></div>
+      <div class="stat-card"><div class="stat-icon">🟡</div><div class="stat-val" id="s-warm">0</div><div class="stat-lbl">Warm Leads</div></div>
+    </div>
+    <div class="section-card">
+      <div class="sec-title">Recent Leads <button class="btn btn-outline btn-sm" onclick="showPage('leads')">View All →</button></div>
+      <div id="dash-recent"></div>
+    </div>
+    <div class="section-card">
+      <div class="sec-title">Clients <button class="btn btn-gold btn-sm" onclick="showPage('clients')">Manage →</button></div>
+      <div id="dash-clients"></div>
+    </div>
+  </div>
+
+  <!-- CLIENTS -->
+  <div class="page" id="page-clients">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;">
+      <div>
+        <div class="page-title">Clients 🏢</div>
+        <div class="page-sub">Manage your real estate clients.</div>
+      </div>
+      <button class="btn btn-gold" onclick="openAdd()">+ Add Client</button>
+    </div>
+    <div class="clients-grid" id="clients-grid"></div>
+  </div>
+
+  <!-- LEADS -->
+  <div class="page" id="page-leads">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;">
+      <div>
+        <div class="page-title">All Leads 🎯</div>
+        <div class="page-sub">Every lead from all clients.</div>
+      </div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <select id="f-client" onchange="renderLeads()" style="padding:0.48rem 0.7rem;background:#12121e;border:1px solid var(--border);border-radius:8px;color:#e8e0d0;font-size:0.78rem;font-family:'DM Sans',sans-serif;">
+          <option value="">All Clients</option>
+        </select>
+        <select id="f-cat" onchange="renderLeads()" style="padding:0.48rem 0.7rem;background:#12121e;border:1px solid var(--border);border-radius:8px;color:#e8e0d0;font-size:0.78rem;font-family:'DM Sans',sans-serif;">
+          <option value="">All</option>
+          <option value="Hot">🔥 Hot</option>
+          <option value="Warm">🟡 Warm</option>
+          <option value="Cold">❄️ Cold</option>
+        </select>
+        <button class="btn btn-outline btn-sm" onclick="exportCSV()">📥 Export</button>
+      </div>
+    </div>
+    <div class="section-card" style="padding:0;overflow:hidden;">
+      <div class="leads-wrap">
+        <table class="leads-table">
+          <thead><tr><th>Buyer</th><th>Client</th><th>Property</th><th>Budget</th><th>Score</th><th>Date</th><th></th></tr></thead>
+          <tbody id="leads-tbody"></tbody>
+        </table>
+      </div>
+      <div id="leads-empty" class="empty-state" style="display:none;"><div class="empty-icon">🎯</div><div>No leads yet.</div></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="page" id="page-settings">
+    <div class="page-title">Settings ⚙️</div>
+    <div class="page-sub" style="margin-bottom:1.5rem;">Configure your agency defaults.</div>
+    <div class="section-card">
+      <div class="sec-title">Default API Key</div>
+      <div class="security-note">🔐 Your API key is stored <strong>only in this browser</strong> — it is NEVER put in any URL or shared with anyone.</div>
+      <label class="lbl">Default Anthropic API Key</label>
+      <input class="inp" id="cfg-key" type="password" placeholder="sk-ant-api03-..."/>
+      <label class="lbl">Agency Name</label>
+      <input class="inp" id="cfg-agency" placeholder="Nexia Tech"/>
+      <label class="lbl">New Admin Password (leave blank to keep current)</label>
+      <input class="inp" id="cfg-pass" type="password" placeholder="Leave blank to keep current"/>
+      <div style="margin-top:1rem;display:flex;gap:0.75rem;flex-wrap:wrap;">
+        <button class="btn btn-gold" onclick="saveSettings()">Save Settings</button>
+        <button class="btn btn-danger btn-sm" onclick="if(confirm('Clear ALL data? This cannot be undone.')){localStorage.clear();location.reload();}">🗑 Clear All Data</button>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="sec-title">How to Deploy</div>
+      <div style="font-size:0.8rem;color:var(--muted);line-height:1.8;">
+        1. Upload both <code style="background:#0a0a14;padding:0.1rem 0.35rem;border-radius:4px;color:var(--gold);">nexia-admin.html</code> and <code style="background:#0a0a14;padding:0.1rem 0.35rem;border-radius:4px;color:var(--gold);">nexia-agent.html</code> to Netlify<br/>
+        2. Open admin at <code style="background:#0a0a14;padding:0.1rem 0.35rem;border-radius:4px;color:var(--gold);">yoursite.netlify.app/nexia-admin.html</code><br/>
+        3. Go to Settings → enter your Anthropic API key once<br/>
+        4. Add clients → copy their safe agent links<br/>
+        5. Share links with clients for their ads ✅
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD CLIENT MODAL -->
+<div class="modal-overlay" id="client-modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Add New Client</div>
+    <div class="modal-sub">API key is stored securely — never exposed in the URL.</div>
+    <label class="lbl">Company Name *</label>
+    <input class="inp" id="cl-name" placeholder="Ahmed Realty"/>
+    <label class="lbl">Agent Name *</label>
+    <input class="inp" id="cl-agent" placeholder="Ahmed Khan"/>
+    <label class="lbl">Agent Email * (receives lead reports)</label>
+    <input class="inp" id="cl-email" type="email" placeholder="ahmed@gmail.com"/>
+    <label class="lbl">Phone</label>
+    <input class="inp" id="cl-phone" placeholder="+92 300 1234567"/>
+    <label class="lbl">EmailJS Service ID (optional)</label>
+    <input class="inp" id="cl-svc" placeholder="service_xxxxxxx"/>
+    <label class="lbl">EmailJS Template ID (optional)</label>
+    <input class="inp" id="cl-tpl" placeholder="template_xxxxxxx"/>
+    <label class="lbl">EmailJS Public Key (optional)</label>
+    <input class="inp" id="cl-pub" placeholder="xxxxxxxxxxxxxxxxxxxx"/>
+    <label class="lbl">Brand Color</label>
+    <div class="color-row" id="color-row">
+      <div class="swatch sel" style="background:#d4a853;" data-c="d4a853" onclick="pickColor(this)"></div>
+      <div class="swatch" style="background:#3b82f6;" data-c="3b82f6" onclick="pickColor(this)"></div>
+      <div class="swatch" style="background:#22c55e;" data-c="22c55e" onclick="pickColor(this)"></div>
+      <div class="swatch" style="background:#ef4444;" data-c="ef4444" onclick="pickColor(this)"></div>
+      <div class="swatch" style="background:#8b5cf6;" data-c="8b5cf6" onclick="pickColor(this)"></div>
+      <div class="swatch" style="background:#f59e0b;" data-c="f59e0b" onclick="pickColor(this)"></div>
+      <div class="swatch" style="background:#06b6d4;" data-c="06b6d4" onclick="pickColor(this)"></div>
+      <div class="swatch" style="background:#ec4899;" data-c="ec4899" onclick="pickColor(this)"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveClient()" id="save-btn">Generate Safe Link →</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEAD DETAIL MODAL -->
+<div class="modal-overlay" id="lead-modal">
+  <div class="modal">
+    <div class="modal-title">Lead Details</div>
+    <div id="lead-detail"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="document.getElementById('lead-modal').classList.remove('open')">Close</button>
+      <button class="btn btn-gold btn-sm" onclick="copyLead()">📋 Copy Report</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+var clients=[], leads=[], settings={}, editId=null, selColor='d4a853', viewLead=null, toastTimer;
+
+/* ── BOOT ── */
+window.onload=function(){
+  load();
+  if(sessionStorage.getItem('nexia_auth')==='1') showApp();
+};
+
+function load(){
+  try{clients=JSON.parse(localStorage.getItem('nx_clients')||'[]');}catch(e){clients=[];}
+  try{leads=JSON.parse(localStorage.getItem('nx_leads')||'[]');}catch(e){leads=[];}
+  try{settings=JSON.parse(localStorage.getItem('nx_settings')||'{}');}catch(e){settings={};}
+}
+function save(){
+  localStorage.setItem('nx_clients',JSON.stringify(clients));
+  localStorage.setItem('nx_leads',JSON.stringify(leads));
+  localStorage.setItem('nx_settings',JSON.stringify(settings));
+}
+
+/* ── AUTH ── */
+function doLogin(){
+  var u=document.getElementById('lu').value.trim();
+  var p=document.getElementById('lp').value.trim();
+  if(u===(settings.user||'admin')&&p===(settings.pass||'nexia2024')){
+    sessionStorage.setItem('nexia_auth','1');
+    showApp();
+  } else {
+    toast('❌ Wrong username or password','#ef444440','#ef4444');
+  }
+}
+function doLogout(){
+  sessionStorage.removeItem('nexia_auth');
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+}
+function showApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  if(settings.apiKey) document.getElementById('cfg-key').value=settings.apiKey;
+  if(settings.agency) document.getElementById('cfg-agency').value=settings.agency;
+  renderAll();
+}
+
+/* ── NAV ── */
+function showPage(p){
+  document.querySelectorAll('.page').forEach(function(x){x.classList.remove('active');});
+  document.querySelectorAll('.nav-item').forEach(function(x){x.classList.remove('active');});
+  document.getElementById('page-'+p).classList.add('active');
+  var n=document.getElementById('nav-'+p);
+  if(n)n.classList.add('active');
+  if(p==='leads')populateFilter();
+  renderAll();
+}
+
+/* ── RENDER ── */
+function renderAll(){
+  renderStats();renderClients();renderLeads();renderDashClients();renderDashRecent();
+}
+
+function renderStats(){
+  document.getElementById('s-clients').textContent=clients.length;
+  document.getElementById('s-leads').textContent=leads.length;
+  document.getElementById('s-hot').textContent=leads.filter(function(l){return l.cat==='Hot';}).length;
+  document.getElementById('s-warm').textContent=leads.filter(function(l){return l.cat==='Warm';}).length;
+}
+
+/* ── CLIENT SAFE LINK (no API key in URL!) ── */
+function buildSafeLink(c){
+  var base=window.location.href.replace('nexia-admin.html','nexia-agent.html').split('?')[0];
+  // Only non-sensitive params in URL
+  var p=new URLSearchParams({
+    cid: c.id,
+    name: c.name,
+    agent: c.agentName,
+    email: c.email,
+    phone: c.phone||'',
+    color: c.color,
+    svc: c.ejsSvc||'',
+    tpl: c.ejsTpl||'',
+    pub: c.ejsPub||''
+    // API KEY IS NOT HERE! It's stored in localStorage
+  });
+  return base+'?'+p.toString();
+}
+
+/* ── CLIENTS ── */
+function openAdd(){
+  editId=null;
+  document.getElementById('modal-title').textContent='Add New Client';
+  document.getElementById('save-btn').textContent='Generate Safe Link →';
+  ['cl-name','cl-agent','cl-email','cl-phone','cl-svc','cl-tpl','cl-pub'].forEach(function(id){document.getElementById(id).value='';});
+  selColor='d4a853';
+  document.querySelectorAll('.swatch').forEach(function(s){s.classList.toggle('sel',s.getAttribute('data-c')==='d4a853');});
+  document.getElementById('client-modal').classList.add('open');
+}
+function openEdit(id){
+  var c=clients.find(function(x){return x.id===id;});if(!c)return;
+  editId=id;
+  document.getElementById('modal-title').textContent='Edit Client';
+  document.getElementById('save-btn').textContent='Update →';
+  document.getElementById('cl-name').value=c.name||'';
+  document.getElementById('cl-agent').value=c.agentName||'';
+  document.getElementById('cl-email').value=c.email||'';
+  document.getElementById('cl-phone').value=c.phone||'';
+  document.getElementById('cl-svc').value=c.ejsSvc||'';
+  document.getElementById('cl-tpl').value=c.ejsTpl||'';
+  document.getElementById('cl-pub').value=c.ejsPub||'';
+  selColor=c.color||'d4a853';
+  document.querySelectorAll('.swatch').forEach(function(s){s.classList.toggle('sel',s.getAttribute('data-c')===selColor);});
+  document.getElementById('client-modal').classList.add('open');
+}
+function closeModal(){document.getElementById('client-modal').classList.remove('open');}
+function pickColor(el){
+  document.querySelectorAll('.swatch').forEach(function(s){s.classList.remove('sel');});
+  el.classList.add('sel');selColor=el.getAttribute('data-c');
+}
+function saveClient(){
+  var name=document.getElementById('cl-name').value.trim();
+  var agent=document.getElementById('cl-agent').value.trim();
+  var email=document.getElementById('cl-email').value.trim();
+  if(!name||!agent||!email){toast('⚠️ Name, Agent and Email are required');return;}
+  var id=editId||('c_'+Date.now());
+  var c={
+    id:id, name:name, agentName:agent, email:email,
+    phone:document.getElementById('cl-phone').value.trim(),
+    color:selColor,
+    ejsSvc:document.getElementById('cl-svc').value.trim(),
+    ejsTpl:document.getElementById('cl-tpl').value.trim(),
+    ejsPub:document.getElementById('cl-pub').value.trim(),
+    createdAt:new Date().toISOString()
+  };
+  c.link=buildSafeLink(c);
+
+  if(editId){
+    var idx=clients.findIndex(function(x){return x.id===editId;});
+    if(idx>-1)clients[idx]={...clients[idx],...c};
+    toast('✅ Client updated!');
+  } else {
+    clients.push(c);
+    toast('✅ Client added! Safe link generated 🔐');
+  }
+  save();closeModal();renderAll();
+}
+function delClient(id){
+  if(!confirm('Delete this client?'))return;
+  clients=clients.filter(function(c){return c.id!==id;});
+  save();renderAll();toast('🗑 Client deleted');
+}
+
+function copyLink(link){
+  if(navigator.clipboard){navigator.clipboard.writeText(link);}
+  else{var t=document.createElement('textarea');t.value=link;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);}
+  toast('📋 Safe agent link copied! ✅');
+}
+
+function renderClients(){
+  var g=document.getElementById('clients-grid');
+  if(!clients.length){g.innerHTML='<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">🏢</div><div>No clients yet. Click "+ Add Client"</div></div>';return;}
+  g.innerHTML=clients.map(function(c){
+    var cl=leads.filter(function(l){return l.cid===c.id;});
+    var hot=cl.filter(function(l){return l.cat==='Hot';}).length;
+    var warm=cl.filter(function(l){return l.cat==='Warm';}).length;
+    var ini=c.name.split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);
+    return '<div class="client-card" style="--c:#'+c.color+'">'+
+      '<div class="client-header">'+
+        '<div class="client-avatar" style="background:linear-gradient(135deg,#'+c.color+',#'+c.color+'80)">'+ini+'</div>'+
+        '<div><div class="client-name">'+esc(c.name)+'</div><div class="client-email">'+esc(c.email)+'</div></div>'+
+      '</div>'+
+      '<div class="client-stats">'+
+        '<div class="cs"><div class="cs-num">'+cl.length+'</div><div class="cs-lbl">Leads</div></div>'+
+        '<div class="cs"><div class="cs-num" style="color:#22c55e">'+hot+'</div><div class="cs-lbl">Hot🔥</div></div>'+
+        '<div class="cs"><div class="cs-num" style="color:#f59e0b">'+warm+'</div><div class="cs-lbl">Warm🟡</div></div>'+
+      '</div>'+
+      '<div class="safe-link">🔐 <span>'+esc(c.link)+'</span><button class="copy-btn" onclick="copyLink(clients.find(function(x){return x.id===\''+c.id+'\'}).link)">📋</button></div>'+
+      '<div class="client-actions">'+
+        '<button class="btn btn-outline btn-sm" onclick="openEdit(\''+c.id+'\')">✏️ Edit</button>'+
+        '<button class="btn btn-outline btn-sm" onclick="copyLink(clients.find(function(x){return x.id===\''+c.id+'\'}).link)">🔗 Copy Link</button>'+
+        '<button class="btn btn-danger btn-sm" onclick="delClient(\''+c.id+'\')">🗑</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function renderDashClients(){
+  var el=document.getElementById('dash-clients');
+  if(!clients.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">🏢</div><div>No clients yet.</div></div>';return;}
+  el.innerHTML='<table class="leads-table"><thead><tr><th>Client</th><th>Leads</th><th>Hot</th><th>Warm</th><th>Link</th></tr></thead><tbody>'+
+    clients.map(function(c){
+      var cl=leads.filter(function(l){return l.cid===c.id;});
+      return '<tr><td style="font-weight:600;color:#fff;">'+esc(c.name)+'</td><td>'+cl.length+'</td>'+
+        '<td style="color:#22c55e">'+cl.filter(function(l){return l.cat==='Hot';}).length+'</td>'+
+        '<td style="color:#f59e0b">'+cl.filter(function(l){return l.cat==='Warm';}).length+'</td>'+
+        '<td><button class="btn btn-outline btn-sm" onclick="copyLink(\''+encodeURIComponent(c.link)+'\'.replace(/%3A/g,\':\').replace(/%2F/g,\'/\').replace(/%3F/g,\'?\').replace(/%3D/g,\'=\').replace(/%26/g,\'&\').replace(/%2B/g,\'+\'))">📋 Copy</button></td></tr>';
+    }).join('')+'</tbody></table>';
+}
+
+/* ── LEADS ── */
+function populateFilter(){
+  var s=document.getElementById('f-client');var v=s.value;
+  s.innerHTML='<option value="">All Clients</option>'+clients.map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>';}).join('');
+  s.value=v;
+}
+function renderLeads(){
+  var fc=document.getElementById('f-client').value;
+  var fcat=document.getElementById('f-cat').value;
+  var arr=leads.filter(function(l){return (!fc||l.cid===fc)&&(!fcat||l.cat===fcat);}).slice().reverse();
+  var tb=document.getElementById('leads-tbody');
+  var em=document.getElementById('leads-empty');
+  if(!arr.length){tb.innerHTML='';em.style.display='block';return;}
+  em.style.display='none';
+  var cc={Hot:'hot',Warm:'warm',Cold:'cold'};
+  var ce={Hot:'🔥',Warm:'🟡',Cold:'❄️'};
+  tb.innerHTML=arr.map(function(l){
+    var c=clients.find(function(x){return x.id===l.cid;});
+    return '<tr onclick="openLead(\''+l.id+'\')" style="cursor:pointer;">'+
+      '<td style="font-weight:600;color:#fff;">'+esc(l.name||'—')+'</td>'+
+      '<td style="color:var(--muted);font-size:0.76rem;">'+(c?esc(c.name):'—')+'</td>'+
+      '<td style="font-size:0.76rem;">'+esc(l.pt||'—')+'</td>'+
+      '<td style="font-size:0.76rem;">'+esc(l.budget||'—')+'</td>'+
+      '<td><span class="score-badge '+(cc[l.cat]||'cold')+'">'+ce[l.cat]+' '+l.cat+' · '+l.score+'/10</span></td>'+
+      '<td style="font-size:0.7rem;color:var(--muted);">'+fmtDate(l.date)+'</td>'+
+      '<td><button class="btn btn-outline btn-sm" onclick="event.stopPropagation();openLead(\''+l.id+'\')">View</button></td>'+
+    '</tr>';
+  }).join('');
+}
+function renderDashRecent(){
+  var el=document.getElementById('dash-recent');
+  var arr=leads.slice().reverse().slice(0,5);
+  if(!arr.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">🎯</div><div>No leads yet. Share client agent links!</div></div>';return;}
+  var ce={Hot:'🔥',Warm:'🟡',Cold:'❄️'};var cc={Hot:'hot',Warm:'warm',Cold:'cold'};
+  el.innerHTML='<table class="leads-table"><thead><tr><th>Buyer</th><th>Client</th><th>Budget</th><th>Score</th><th>Date</th></tr></thead><tbody>'+
+    arr.map(function(l){
+      var c=clients.find(function(x){return x.id===l.cid;});
+      return '<tr><td style="font-weight:600;color:#fff;">'+esc(l.name||'—')+'</td>'+
+        '<td style="font-size:0.76rem;color:var(--muted);">'+(c?esc(c.name):'—')+'</td>'+
+        '<td style="font-size:0.76rem;">'+esc(l.budget||'—')+'</td>'+
+        '<td><span class="score-badge '+(cc[l.cat]||'cold')+'">'+ce[l.cat]+' '+l.score+'/10</span></td>'+
+        '<td style="font-size:0.7rem;color:var(--muted);">'+fmtDate(l.date)+'</td></tr>';
+    }).join('')+'</tbody></table>';
+}
+
+function openLead(id){
+  var l=leads.find(function(x){return x.id===id;});if(!l)return;
+  viewLead=l;
+  var c=clients.find(function(x){return x.id===l.cid;});
+  var sc=l.score>=8?'#22c55e':l.score>=5?'#f59e0b':'#ef4444';
+  var ce={Hot:'🔥',Warm:'🟡',Cold:'❄️'};
+  document.getElementById('lead-detail').innerHTML=
+    '<div style="text-align:center;padding:1rem;border-radius:12px;background:linear-gradient(135deg,'+sc+'18,'+sc+'08);border:1px solid '+sc+'25;margin-bottom:1rem;">'+
+      '<div style="font-size:2.4rem;font-weight:800;color:'+sc+';font-family:Syne,sans-serif;">'+l.score+'<span style="font-size:1rem;color:var(--muted)">/10</span></div>'+
+      '<div style="color:'+sc+';font-weight:600;margin-top:0.2rem;">'+(ce[l.cat]||'')+' '+l.cat+' Lead</div>'+
+    '</div>'+
+    [['👤','Name',l.name],['🏢','Client',c?c.name:'—'],['🏡','Property',l.pt],['📍','Location',l.loc],
+     ['💰','Budget',l.budget],['📅','Timeline',l.timeline],['🎯','Purpose',l.purpose],
+     ['🏦','Financing',l.financing],['📐','Size/Rooms',l.bedrooms],['🏙️','Same City',l.sameCity],
+     ['📅','Date',fmtDate(l.date)]].map(function(r){
+      return '<div style="padding:0.48rem 0;border-bottom:1px solid #d4a8530f;">'+
+        '<div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;">'+r[0]+' '+r[1]+'</div>'+
+        '<div style="font-size:0.82rem;color:#e8e0d0;margin-top:0.1rem;">'+(r[2]||'—')+'</div></div>';
+    }).join('');
+  document.getElementById('lead-modal').classList.add('open');
+}
+function copyLead(){
+  if(!viewLead)return;
+  var l=viewLead;var c=clients.find(function(x){return x.id===l.cid;});
+  var t='NEW BUYER LEAD\n\nName: '+l.name+'\nClient: '+(c?c.name:'—')+'\nProperty: '+l.pt+'\nLocation: '+l.loc+'\nBudget: '+l.budget+'\nTimeline: '+l.timeline+'\nPurpose: '+l.purpose+'\nFinancing: '+l.financing+'\nSize/Rooms: '+l.bedrooms+'\nSame City: '+l.sameCity+'\n\nScore: '+l.score+'/10 | '+l.cat+' Lead\nDate: '+fmtDate(l.date);
+  if(navigator.clipboard)navigator.clipboard.writeText(t);
+  toast('📋 Report copied!');
+}
+function exportCSV(){
+  var csv='Name,Client,Property,Location,Budget,Timeline,Purpose,Financing,Score,Category,Date\n'+
+    leads.map(function(l){
+      var c=clients.find(function(x){return x.id===l.cid;});
+      return [l.name,c?c.name:'',l.pt,l.loc,l.budget,l.timeline,l.purpose,l.financing,l.score,l.cat,fmtDate(l.date)].map(function(v){return '"'+(v||'')+'"';}).join(',');
+    }).join('\n');
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='nexia-leads.csv';a.click();
+  toast('📥 Exported!');
+}
+
+/* ── SETTINGS ── */
+function saveSettings(){
+  settings.apiKey=document.getElementById('cfg-key').value.trim();
+  settings.agency=document.getElementById('cfg-agency').value.trim();
+  var np=document.getElementById('cfg-pass').value.trim();
+  if(np)settings.pass=np;
+  save();toast('✅ Settings saved! API key stored securely 🔐');
+}
+
+/* ── LISTEN FOR LEADS FROM AGENT ── */
+window.addEventListener('storage',function(e){
+  if(e.key==='nx_new_lead'&&e.newValue){
+    try{var l=JSON.parse(e.newValue);leads.push(l);save();renderAll();toast('🔥 New '+l.cat+' lead from '+l.clientName+'!');}catch(err){}
+  }
+  if(e.key==='nx_leads'){
+    try{leads=JSON.parse(e.newValue||'[]');renderAll();}catch(err){}
+  }
+});
+setInterval(function(){
+  try{var s=JSON.parse(localStorage.getItem('nx_leads')||'[]');if(s.length!==leads.length){leads=s;renderAll();}}catch(e){}
+},8000);
+
+/* ── HELPERS ── */
+function fmtDate(d){if(!d)return '—';try{return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}catch(e){return d;}}
+function esc(t){return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function toast(msg,bg,col){
+  var t=document.getElementById('toast');t.textContent=msg;t.style.background=bg||'#1a2a1a';t.style.borderColor=(col||'#22c55e')+'40';t.style.color=col||'#22c55e';t.style.display='block';
+  clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.style.display='none';},3500);
+}
+document.getElementById('client-modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+document.getElementById('lead-modal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+</script>
+</body>
+</html>

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Property Assistant</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;}
+:root{--brand:#d4a853;--brand2:#b8860b;--dark:#0a0a0f;--text:#e8e0d0;--muted:#6b6b7e;}
+
+#app{height:100vh;display:flex;flex-direction:column;background:linear-gradient(135deg,var(--dark),#111118,#0d0d14);color:var(--text);}
+
+.header{padding:0.85rem 1rem;background:#0f0f1890;border-bottom:1px solid #d4a85320;display:flex;align-items:center;gap:0.75rem;flex-shrink:0;backdrop-filter:blur(8px);}
+.header-avatar{width:38px;height:38px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--brand),var(--brand2));display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
+.header-name{font-size:0.92rem;font-weight:700;color:#fff;}
+.header-status{font-size:0.68rem;color:#22c55e;display:flex;align-items:center;gap:0.3rem;}
+.status-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;display:inline-block;animation:pulse 2s infinite;}
+.header-badge{margin-left:auto;padding:0.28rem 0.7rem;border-radius:20px;font-size:0.7rem;font-weight:600;display:none;cursor:pointer;}
+
+#messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.85rem;}
+.msg-row{display:flex;align-items:flex-end;gap:0.5rem;animation:fadeUp 0.3s ease;}
+.msg-row.user{justify-content:flex-end;}
+.msg-av{width:30px;height:30px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--brand),var(--brand2));display:flex;align-items:center;justify-content:center;font-size:0.8rem;}
+.msg-av.user-av{background:#1e1e2e;border:1px solid #d4a85325;}
+.bubble{max-width:72%;padding:0.78rem 1rem;font-size:0.875rem;line-height:1.65;box-shadow:0 3px 16px #00000035;}
+.bubble.bot{border-radius:4px 14px 14px 14px;background:linear-gradient(135deg,#1a1a26,#141421);border:1px solid #d4a85318;color:var(--text);}
+.bubble.user{border-radius:14px 14px 4px 14px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#0a0a0f;font-weight:500;}
+.bubble strong{color:var(--brand);}
+.bubble.user strong{color:#0a0a0f;}
+
+#typing{display:none;padding:0 1rem 0.5rem;align-items:flex-end;gap:0.5rem;}
+.typing-dots{padding:0.75rem 0.95rem;border-radius:4px 14px 14px 14px;background:linear-gradient(135deg,#1a1a26,#141421);border:1px solid #d4a85318;display:flex;gap:4px;align-items:center;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--brand);}
+.dot:nth-child(1){animation:bounce 1.2s 0s ease-in-out infinite;}
+.dot:nth-child(2){animation:bounce 1.2s 0.2s ease-in-out infinite;}
+.dot:nth-child(3){animation:bounce 1.2s 0.4s ease-in-out infinite;}
+
+.input-area{padding:0.75rem 1rem 1.1rem;border-top:1px solid #d4a85318;background:#0a0a12;flex-shrink:0;}
+.input-row{display:flex;gap:0.6rem;align-items:flex-end;}
+#user-input{flex:1;padding:0.78rem 0.95rem;background:#14141e;border:1px solid #d4a85325;border-radius:12px;color:var(--text);font-size:0.875rem;font-family:inherit;resize:none;max-height:100px;line-height:1.5;}
+#user-input:focus{outline:none;border-color:#d4a85360;}
+#user-input::placeholder{color:#3a3a50;}
+#user-input:disabled{opacity:0.5;}
+#send-btn{width:44px;height:44px;border-radius:12px;border:none;flex-shrink:0;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#0a0a0f;font-size:1rem;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;}
+#send-btn:disabled{background:#1a1a25;color:#3a3a48;cursor:not-allowed;}
+#send-btn:not(:disabled):active{transform:scale(0.95);}
+.done-msg{text-align:center;margin-top:0.5rem;font-size:0.72rem;color:var(--brand);display:none;}
+
+#report-modal{display:none;position:fixed;inset:0;z-index:100;background:#00000095;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);}
+#report-modal.open{display:flex;}
+.report-card{width:100%;max-width:500px;max-height:88vh;overflow-y:auto;background:linear-gradient(180deg,#13131e,#0f0f18);border:1px solid #d4a85325;border-radius:18px 18px 0 0;padding:1.5rem;animation:slideUp 0.35s ease;}
+.rpt-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
+.rpt-label{font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--brand);}
+.close-btn{width:28px;height:28px;border-radius:50%;border:1px solid #d4a85325;background:transparent;color:var(--muted);font-size:1rem;cursor:pointer;}
+.score-card{text-align:center;border-radius:12px;padding:1rem;margin-bottom:1.25rem;}
+.field-row{padding:0.55rem 0;border-bottom:1px solid #d4a85310;}
+.field-lbl{font-size:0.62rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.1rem;}
+.field-val{font-size:0.83rem;color:var(--text);}
+.rpt-btns{display:flex;gap:0.6rem;margin-top:1.25rem;}
+.rpt-btn{flex:1;padding:0.72rem;border-radius:8px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:600;}
+.btn-outline{background:#1a1a25;border:1px solid #d4a85330;color:var(--brand);}
+.btn-gold{background:linear-gradient(135deg,var(--brand),var(--brand2));border:none;color:#0a0a0f;}
+.email-status{margin-top:0.75rem;padding:0.6rem;border-radius:8px;text-align:center;font-size:0.74rem;display:none;}
+.email-ok{background:#22c55e12;border:1px solid #22c55e30;color:#22c55e;}
+.email-err{background:#ef444412;border:1px solid #ef444430;color:#ef4444;}
+
+#error-screen{display:none;height:100vh;align-items:center;justify-content:center;background:var(--dark);flex-direction:column;gap:1rem;padding:2rem;text-align:center;}
+.err-icon{font-size:3rem;}
+.err-title{font-size:1.2rem;font-weight:700;color:#fff;}
+.err-sub{font-size:0.82rem;color:var(--muted);line-height:1.6;max-width:360px;}
+
+#toast{position:fixed;bottom:5rem;left:50%;transform:translateX(-50%);padding:0.7rem 1.1rem;border-radius:10px;background:#1a2a1a;border:1px solid #22c55e40;color:#22c55e;font-size:0.8rem;white-space:nowrap;z-index:999;display:none;animation:fadeUp 0.3s ease;box-shadow:0 6px 24px #00000050;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+@keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:#d4a85330;border-radius:2px;}
+</style>
+</head>
+<body>
+
+<div id="error-screen">
+  <div class="err-icon">⚠️</div>
+  <div class="err-title">Invalid Agent Link</div>
+  <div class="err-sub" id="err-msg">This link is missing required parameters. Please use the link generated from the Nexia Admin Panel.</div>
+</div>
+
+<div id="app" style="display:none;">
+  <div class="header">
+    <div class="header-avatar">🏢</div>
+    <div>
+      <div class="header-name" id="header-name">Property Assistant</div>
+      <div class="header-status"><span class="status-dot"></span> Online · Replies instantly</div>
+    </div>
+    <div class="header-badge" id="lead-badge" onclick="showReport()"></div>
+  </div>
+  <div id="messages"></div>
+  <div id="typing">
+    <div class="msg-av">🏢</div>
+    <div class="typing-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  </div>
+  <div class="input-area">
+    <div class="input-row">
+      <textarea id="user-input" rows="1" placeholder="Type your reply..."></textarea>
+      <button id="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+    <div class="done-msg" id="done-msg">✅ Qualification complete · Our expert will contact you shortly</div>
+  </div>
+</div>
+
+<div id="report-modal" onclick="if(event.target===this)closeReport()">
+  <div class="report-card">
+    <div class="rpt-header">
+      <span class="rpt-label">Lead Report</span>
+      <button class="close-btn" onclick="closeReport()">✕</button>
+    </div>
+    <div id="rpt-score" class="score-card"></div>
+    <div id="rpt-fields"></div>
+    <div class="rpt-btns">
+      <button class="rpt-btn btn-outline" onclick="copyReport()">📋 Copy</button>
+      <button class="rpt-btn btn-gold" id="email-btn" onclick="resendEmail()">📧 Email Agent</button>
+    </div>
+    <div class="email-status email-ok" id="email-ok">✅ Lead emailed to agent</div>
+    <div class="email-status email-err" id="email-err">⚠️ Email failed — use Copy</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ══════════════════════════════
+   READ URL PARAMS (safe - no API key in URL)
+══════════════════════════════ */
+var params=new URLSearchParams(window.location.search);
+var cid=params.get('cid')||'';
+var CLIENT={
+  name:     params.get('name')||'',
+  agent:    params.get('agent')||'',
+  email:    params.get('email')||'',
+  phone:    params.get('phone')||'',
+  color:    params.get('color')||'d4a853',
+  slug:     params.get('slug')||'',
+  clientId: cid,
+  // API key & EmailJS keys loaded from localStorage (never from URL)
+  apiKey:'', ejsSvc:'', ejsTpl:'', ejsPub:''
+};
+
+/* Load private config from localStorage using client ID */
+function loadPrivateConfig(){
+  try{
+    var stored=JSON.parse(localStorage.getItem('nexia_clients')||'[]');
+    // Match by client ID first, then by slug or name
+    var match=stored.find(function(c){
+      return c.id===cid || c.slug===CLIENT.slug || c.name===CLIENT.name;
+    });
+    if(match){
+      CLIENT.apiKey=match.apiKey||'';
+      CLIENT.ejsSvc=match.ejsSvc||'';
+      CLIENT.ejsTpl=match.ejsTpl||'';
+      CLIENT.ejsPub=match.ejsPub||'';
+      CLIENT.clientId=match.id;
+      return true;
+    }
+    // Also try default key from settings
+    var settings=JSON.parse(localStorage.getItem('nexia_settings')||'{}');
+    if(settings.defaultKey){CLIENT.apiKey=settings.defaultKey;return true;}
+  }catch(e){console.error(e);}
+  return false;
+}
+
+/* Validate & Boot */
+if(!CLIENT.name){
+  document.getElementById('error-screen').style.display='flex';
+} else {
+  var hasConfig=loadPrivateConfig();
+  if(!hasConfig||!CLIENT.apiKey){
+    document.getElementById('error-screen').style.display='flex';
+    document.getElementById('err-msg').textContent='Agent configuration not found. Please open the Nexia Admin Panel on this same device/browser first, then share this link.';
+  } else {
+    // Apply brand color
+    document.documentElement.style.setProperty('--brand','#'+CLIENT.color);
+    document.documentElement.style.setProperty('--brand2','#'+CLIENT.color+'cc');
+    document.getElementById('header-name').textContent=CLIENT.name+' Assistant';
+    document.title=CLIENT.name+' — Property Assistant';
+    if(CLIENT.ejsPub)emailjs.init(CLIENT.ejsPub);
+    document.getElementById('app').style.display='flex';
+    startChat();
+  }
+}
+
+/* ══════════════════════════════
+   SYSTEM PROMPT
+══════════════════════════════ */
+var SYSTEM='You are a professional AI real estate lead qualification assistant for '+CLIENT.name+'.\n\n'+
+'Qualify buyers step by step. Ask ONE question at a time:\n'+
+'1. Ask for their full name\n2. What type of property? (Plot/Apartment/Villa/Commercial/Land)\n'+
+'3. Which location or area?\n4. Approximate budget range?\n5. Personal use or investment?\n'+
+'6. When planning to purchase? (Immediately/1-3 months/6 months/Just exploring)\n'+
+'7. Loan or full payment?\n8. Bedrooms or plot size needed?\n9. Do they already live in the same city?\n\n'+
+'Rules: 1-3 sentences per reply, warm and professional. Acknowledge each answer. Ask ONE question at a time. Represent '+CLIENT.name+' professionally.\n\n'+
+'SCORING: Budget defined=+3, Timeline within 3 months=+3, Location specified=+2, Property type=+1, Actively replying=+1\n\n'+
+'AFTER question 9, say exactly:\n"Thank you for sharing the details 🙏 Our team from '+CLIENT.name+' will reach out to you shortly with the best available options. We\'ll be in touch very soon!"\n\n'+
+'Then output:\nLEAD_JSON:{"name":"...","phone":"To be collected","property_type":"...","location":"...","budget":"...","timeline":"...","purpose":"...","financing":"...","bedrooms_or_size":"...","same_city":"...","lead_score":7,"lead_category":"Warm"}';
+
+/* ══════════════════════════════
+   CHAT STATE
+══════════════════════════════ */
+var history=[],leadData=null,emailSent=false,toastTimer=null;
+
+function startChat(){
+  var greeting='Hi there 👋\nWelcome to **'+CLIENT.name+'**! I\'m your AI property assistant, here to help find your perfect match.\n\nLet me ask a few quick questions — what\'s your **full name**?';
+  history=[{role:'assistant',content:greeting}];
+  addMsg('bot',greeting);
+  var inp=document.getElementById('user-input');
+  inp.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
+  inp.addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px';});
+}
+
+function addMsg(type,text){
+  var msgs=document.getElementById('messages');
+  var row=document.createElement('div');
+  row.className='msg-row'+(type==='user'?' user':'');
+  if(type==='bot'){row.innerHTML='<div class="msg-av">🏢</div><div class="bubble bot">'+fmt(text)+'</div>';}
+  else{row.innerHTML='<div class="bubble user">'+esc(text)+'</div><div class="msg-av user-av">👤</div>';}
+  msgs.appendChild(row);
+  setTimeout(function(){msgs.scrollTop=msgs.scrollHeight;},60);
+}
+
+function fmt(t){return esc(t).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');}
+function esc(t){return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function showTyping(on){document.getElementById('typing').style.display=on?'flex':'none';if(on){var m=document.getElementById('messages');setTimeout(function(){m.scrollTop=m.scrollHeight;},60);}}
+
+async function sendMessage(){
+  var inp=document.getElementById('user-input');
+  var text=inp.value.trim();
+  if(!text||leadData)return;
+  inp.value='';inp.style.height='auto';
+  document.getElementById('send-btn').disabled=true;
+  addMsg('user',text);
+  history.push({role:'user',content:text});
+  showTyping(true);
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':CLIENT.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,system:SYSTEM,messages:history})
+    });
+    var data=await res.json();
+    if(!res.ok)throw new Error(data.error&&data.error.message?data.error.message:'Error '+res.status);
+    var raw=data.content&&data.content[0]?data.content[0].text:'';
+    history.push({role:'assistant',content:raw});
+    var m=raw.match(/LEAD_JSON:(\{[\s\S]*?\})/);
+    var clean=raw.replace(/LEAD_JSON:[\s\S]*$/,'').trim();
+    showTyping(false);
+    addMsg('bot',clean);
+    if(m){
+      try{leadData=JSON.parse(m[1]);markDone();saveLeadToAdmin();setTimeout(showReport,1400);setTimeout(sendEmail,2200);}
+      catch(e){console.error(e);}
+    } else {document.getElementById('send-btn').disabled=false;}
+  }catch(err){
+    showTyping(false);console.error(err);
+    addMsg('bot','Sorry, something went wrong. Please try again 🙏');
+    document.getElementById('send-btn').disabled=false;
+  }
+}
+
+function markDone(){
+  var inp=document.getElementById('user-input');
+  inp.disabled=true;inp.placeholder='Conversation complete ✅';
+  document.getElementById('send-btn').disabled=true;
+  document.getElementById('done-msg').style.display='block';
+  if(!leadData)return;
+  var score=leadData.lead_score,cat=leadData.lead_category;
+  var color=score>=8?'#22c55e':score>=5?'#f59e0b':'#ef4444';
+  var emoji=cat==='Hot'?'🔥':cat==='Warm'?'🟡':'❄️';
+  var badge=document.getElementById('lead-badge');
+  badge.textContent=emoji+' '+cat+' · '+score+'/10';
+  badge.style.display='block';badge.style.border='1px solid '+color+'40';badge.style.color=color;
+}
+
+/* Save lead to shared localStorage so admin dashboard sees it */
+function saveLeadToAdmin(){
+  if(!leadData)return;
+  try{
+    var lead={
+      id:'l_'+Date.now(),clientId:CLIENT.clientId,clientName:CLIENT.name,
+      name:leadData.name,propertyType:leadData.property_type,location:leadData.location,
+      budget:leadData.budget,timeline:leadData.timeline,purpose:leadData.purpose,
+      financing:leadData.financing,bedrooms:leadData.bedrooms_or_size,
+      sameCity:leadData.same_city,score:leadData.lead_score,
+      category:leadData.lead_category,date:new Date().toISOString()
+    };
+    var existing=JSON.parse(localStorage.getItem('nexia_leads')||'[]');
+    existing.push(lead);
+    localStorage.setItem('nexia_leads',JSON.stringify(existing));
+    localStorage.setItem('nexia_new_lead',JSON.stringify(lead));
+    setTimeout(function(){localStorage.removeItem('nexia_new_lead');},3000);
+  }catch(e){console.error(e);}
+}
+
+function showReport(){
+  if(!leadData)return;
+  var score=leadData.lead_score,cat=leadData.lead_category;
+  var color=score>=8?'#22c55e':score>=5?'#f59e0b':'#ef4444';
+  var emoji=cat==='Hot'?'🔥':cat==='Warm'?'🟡':'❄️';
+  var bg=cat==='Hot'?'linear-gradient(135deg,#22c55e22,#16a34a11)':cat==='Warm'?'linear-gradient(135deg,#f59e0b22,#d9780011)':'linear-gradient(135deg,#ef444422,#dc262611)';
+  var sc=document.getElementById('rpt-score');
+  sc.style.background=bg;sc.style.border='1px solid '+color+'28';
+  sc.innerHTML='<div style="font-size:2.8rem;font-weight:700;color:'+color+';line-height:1;">'+score+'<span style="font-size:1rem;color:#6b6b7e">/10</span></div>'+
+    '<div style="font-size:0.95rem;font-weight:600;color:'+color+';margin-top:0.3rem;">'+emoji+' '+cat+' Lead</div>'+
+    '<div style="font-size:0.68rem;color:#6b6b7e;margin-top:0.2rem;">'+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+'</div>';
+  var fields=[['👤','Name',leadData.name],['🏡','Property',leadData.property_type],['📍','Location',leadData.location],['💰','Budget',leadData.budget],['📅','Timeline',leadData.timeline],['🎯','Purpose',leadData.purpose],['🏦','Financing',leadData.financing],['📐','Size/Rooms',leadData.bedrooms_or_size],['🏙️','Same City',leadData.same_city]];
+  document.getElementById('rpt-fields').innerHTML=fields.map(function(f){
+    return '<div class="field-row"><div class="field-lbl">'+f[0]+' '+f[1]+'</div><div class="field-val">'+(f[2]||'—')+'</div></div>';
+  }).join('');
+  document.getElementById('email-ok').style.display=emailSent?'block':'none';
+  document.getElementById('email-btn').style.display=emailSent?'none':'block';
+  document.getElementById('email-err').style.display='none';
+  document.getElementById('report-modal').classList.add('open');
+}
+function closeReport(){document.getElementById('report-modal').classList.remove('open');}
+
+function copyReport(){
+  if(!leadData)return;
+  var t=CLIENT.name+' — NEW BUYER LEAD\n\nName: '+leadData.name+'\nProperty: '+leadData.property_type+'\nLocation: '+leadData.location+'\nBudget: '+leadData.budget+'\nTimeline: '+leadData.timeline+'\nPurpose: '+leadData.purpose+'\nFinancing: '+leadData.financing+'\nSize: '+leadData.bedrooms_or_size+'\nSame City: '+leadData.same_city+'\n\nScore: '+leadData.lead_score+'/10 | '+leadData.lead_category+' Lead\n'+new Date().toLocaleString();
+  if(navigator.clipboard)navigator.clipboard.writeText(t).then(function(){showToast('📋 Copied!');});
+}
+
+async function sendEmail(){
+  if(!CLIENT.ejsSvc||!CLIENT.ejsTpl||!CLIENT.email||!leadData)return;
+  var p={to_email:CLIENT.email,to_name:CLIENT.agent,lead_name:leadData.name,property_type:leadData.property_type,location:leadData.location,budget:leadData.budget,timeline:leadData.timeline,purpose:leadData.purpose,financing:leadData.financing,bedrooms:leadData.bedrooms_or_size,same_city:leadData.same_city,lead_score:leadData.lead_score+'/10',lead_category:leadData.lead_category,client_name:CLIENT.name,timestamp:new Date().toLocaleString(),summary_text:CLIENT.name+' — NEW BUYER LEAD\n\nName: '+leadData.name+'\nProperty: '+leadData.property_type+'\nLocation: '+leadData.location+'\nBudget: '+leadData.budget+'\nTimeline: '+leadData.timeline+'\nScore: '+leadData.lead_score+'/10 | '+leadData.lead_category+' Lead\n'+new Date().toLocaleString()};
+  try{
+    await emailjs.send(CLIENT.ejsSvc,CLIENT.ejsTpl,p);
+    emailSent=true;showToast('✅ Lead emailed to agent!');
+    document.getElementById('email-ok').style.display='block';
+    document.getElementById('email-btn').style.display='none';
+  }catch(err){console.error(err);document.getElementById('email-err').style.display='block';}
+}
+function resendEmail(){sendEmail();}
+
+function showToast(msg){
+  var t=document.getElementById('toast');t.textContent=msg;t.style.display='block';
+  clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.style.display='none';},3500);
+}
+</script>
+</body>
+</html>
